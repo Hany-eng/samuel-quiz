@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مسابقة سفر صموئيل الأول – الإصحاح الأول والثاني</title>
+<style>
+:root{--maroon:#6d1a2b;--gold:#c9a227;--bg:#fbf6ee;--ink:#2b1a1a;--card:#fff}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic",Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.8}
+header{background:var(--maroon);color:#fff;text-align:center;padding:18px 12px;border-bottom:5px solid var(--gold)}
+header h1{margin:0;font-size:1.25rem}
+header p{margin:4px 0 0;font-size:.9rem;color:#f3dfa0}
+main{max-width:680px;margin:0 auto;padding:14px}
+.card{background:var(--card);border-radius:12px;padding:14px 16px;margin:12px 0;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+h2{color:var(--maroon);border-bottom:2px solid var(--gold);padding-bottom:4px;margin:20px 0 8px;font-size:1.1rem}
+.words li{margin:4px 0}
+.q{font-weight:700;margin-bottom:6px}
+label{display:block;padding:8px 10px;margin:5px 0;border:1.5px solid #e2d5b8;border-radius:8px;cursor:pointer}
+label:has(input:checked){border-color:var(--maroon);background:#f8e9ec}
+input[type=radio]{margin-left:8px;accent-color:var(--maroon)}
+input[type=text]{width:100%;padding:10px;border:1.5px solid var(--gold);border-radius:8px;font:inherit}
+button,.btn{display:block;width:100%;padding:12px;margin:10px 0;border:0;border-radius:10px;font:inherit;font-weight:700;font-size:1.05rem;cursor:pointer;background:var(--maroon);color:#fff;text-align:center;text-decoration:none}
+.btn.wa{background:#25a244}
+.note{background:#fff3cd;border:1px solid var(--gold);border-radius:8px;padding:8px 12px;font-size:.92rem}
+.score{font-size:2.2rem;text-align:center;color:var(--maroon);font-weight:800}
+.hidden{display:none}
+.warn{color:#b00020;font-weight:700;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <h1>مسابقة سفر صموئيل الأول</h1>
+  <p>الإصحاح الأول والثاني – أسرة لباس الصليب</p>
+</header>
+<main>
+  <div id="locked" class="card hidden"></div>
+  <div id="app">
+    <div class="note">عندك محاولتان فقط، فاقرأ كويس قبل ما تجاوب. هتشوف درجتك بس في الآخر.</div>
+
+    <div class="card"><div class="q">اكتب اسمك:</div><input type="text" id="name" placeholder="اسمك هنا" autocomplete="off"></div>
+
+    <h2>الإصحاح الأول</h2>
+    <div class="card words"><b>الكلمات الصعبة:</b>
+      <ul>
+        <li><b>أفراتي:</b> يعني من سبط أفرام (أو مقيم في جبل أفرام).</li>
+        <li><b>ألقانة:</b> اسم عبري يعني "الله اقتنى" أو "الله يقتني".</li>
+        <li><b>مُرّة القلب:</b> أي منكسرة الروح (ممرارة النفس)، يعني الحزينة جداً والمهمومة بسبب ضيق شديد.</li>
+      </ul>
+    </div>
+    <div id="part1"></div>
+
+    <h2>الإصحاح الثاني</h2>
+    <div class="card words"><b>الكلمات الصعبة:</b>
+      <ul>
+        <li><b>قرني:</b> قوتي وكرامتي وانتصاري.</li>
+        <li><b>صخرة:</b> رمز للحماية والثبات، والمقصود الله.</li>
+        <li><b>تمنطقوا بالبأس:</b> لبسوا القوة وتشجعوا.</li>
+        <li><b>العاقر:</b> المرأة التي لا تنجب.</li>
+        <li><b>الهاوية:</b> عالم الأموات أو مكان الموتى.</li>
+        <li><b>مزبلة:</b> مكان القمامة والقاذورات، والمقصود حالة الذل الشديد.</li>
+        <li><b>أقطار الأرض:</b> أطراف الأرض وجميع نواحيها.</li>
+        <li><b>أتقيائه:</b> المؤمنون به والخائفون من الله.</li>
+        <li><b>بنو بليعال:</b> الأشرار والفاسدون.</li>
+        <li><b>الأفود:</b> ثوب كهنوتي كان يلبسه الكهنة أثناء الخدمة.</li>
+        <li><b>المرجل:</b> إناء كبير للطبخ.</li>
+      </ul>
+    </div>
+    <div id="part2"></div>
+
+    <div id="err" class="warn hidden"></div>
+    <button id="submit">تسليم الإجابات</button>
+  </div>
+
+  <div id="result" class="card hidden">
+    <div>درجتك:</div>
+    <div class="score" id="scoreText"></div>
+    <div id="attemptInfo" style="text-align:center"></div>
+    <a id="wa" class="btn wa" target="_blank" rel="noopener">ابعت نتيجتك على واتساب</a>
+    <button id="retry" class="hidden">حاول مرة تانية</button>
+  </div>
+</main>
+
+<script>
+// ====== إعدادات ======
+const PHONE = "201211970083";  // رقم واتساب الخادم
+const MAX_ATTEMPTS = 2;
+const STORE_KEY = "samuel_quiz_ch1_2_v1";
+
+// a = رقم الإجابة الصحيحة (يبدأ من 0)
+const part1 = [
+  {q:"ما اسم المدينة التي كان يصعد إليها ألقانة كل سنة ليسجد ويذبح للرب؟", o:["أورشليم","شيلوه","بيت لحم","الناصرة"], a:1},
+  {q:"من هو الكاهن الذي كان يخدم في هيكل الرب بشيلوه عندما جاءت حنة لتصلي؟", o:["صموئيل","عالي","صادوق","فنحاس"], a:1},
+  {q:"كان لألقانة زوجتان: حنة وفننة. وكان لفننة أولاد، ولكن حنة لم يكن لها أولاد.", o:["صح","خطأ"], a:0},
+  {q:"عندما رأى عالي الكاهن حنة تصلي بشفتيها فقط دون صوت، ظن للوهلة الأولى أنها سكرانة.", o:["صح","خطأ"], a:0},
+  {q:"قالت حنة في صلاتها: «يا رب الجنود، إن نظرتَ إلى ذل أمتك... فلا يرتفع على رأسه ........».", o:["سيف","موسى","تاج"], a:1},
+  {q:"دعت حنة اسم الصبي ........ قائلة: «لأني من الرب طلبته».", o:["عالي","ألقانة","صموئيل"], a:2}
+];
+const part2 = [
+  {q:"من هي المرأة التي صلّت صلاة الشكر في بداية الإصحاح؟", o:["راحيل","حنة","مريم"], a:1},
+  {q:"من كان يخدم أمام الرب وهو صبي صغير؟", o:["داود","صموئيل","سليمان"], a:1},
+  {q:"«لا تتكلموا بتشامخ وكبرياء، ولا تخرجوا وقاحة من أفواهكم، لأن الرب ........».", o:["إله عليم","إله بعيد","إله غاضب"], a:0},
+  {q:"أما الصبي صموئيل فتزايد نمواً و........ عند الرب والناس أيضاً.", o:["كبرياءً","صلاحاً","خوفاً"], a:1},
+  {q:"كانت حنة تصلي للرب بفرح وشكر بعد أن أعطاها صموئيل.", o:["صح","خطأ"], a:0},
+  {q:"كان حفني وفينحاس ابني عالي الكاهن بارَّين أمام الرب.", o:["صح","خطأ"], a:1}
+];
+const all = part1.concat(part2);
+
+const $ = id => document.getElementById(id);
+
+function load(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || {attempts:0,last:null,name:""}; }catch(e){ return {attempts:0,last:null,name:""}; } }
+function save(s){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(s)); }catch(e){} }
+
+function render(el, list, offset){
+  el.innerHTML = list.map((it,i)=>{
+    const n = offset+i;
+    return `<div class="card"><div class="q">${n+1}. ${it.q}</div>` +
+      it.o.map((t,j)=>`<label><input type="radio" name="q${n}" value="${j}">${t}</label>`).join("") + `</div>`;
+  }).join("");
+}
+render($("part1"), part1, 0);
+render($("part2"), part2, part1.length);
+
+function waLink(name, score, attempt){
+  const text = `مسابقة سفر صموئيل الأول (الإصحاح 1 و2)\nالاسم: ${name}\nالدرجة: ${score} من ${all.length}\nالمحاولة: ${attempt}`;
+  return `https://wa.me/${PHONE}?text=${encodeURIComponent(text)}`;
+}
+
+function showResult(state){
+  $("app").classList.add("hidden");
+  $("locked").classList.add("hidden");
+  $("result").classList.remove("hidden");
+  $("scoreText").textContent = `${state.last.score} من ${all.length}`;
+  const left = MAX_ATTEMPTS - state.attempts;
+  $("attemptInfo").textContent = left > 0 ? `باقي لك محاولة واحدة.` : `خلصت محاولاتك. بالتوفيق!`;
+  $("wa").href = waLink(state.last.name, state.last.score, state.attempts);
+  $("retry").classList.toggle("hidden", left <= 0);
+}
+
+$("submit").onclick = () => {
+  const name = $("name").value.trim();
+  const err = $("err");
+  if(!name){ err.textContent = "اكتب اسمك الأول."; err.classList.remove("hidden"); $("name").focus(); return; }
+  let score = 0;
+  for(let i=0;i<all.length;i++){
+    const c = document.querySelector(`input[name="q${i}"]:checked`);
+    if(!c){ err.textContent = `لسه ما جاوبتش على سؤال رقم ${i+1}.`; err.classList.remove("hidden"); c === null && document.querySelector(`input[name="q${i}"]`).scrollIntoView({block:"center"}); return; }
+    if(+c.value === all[i].a) score++;
+  }
+  err.classList.add("hidden");
+  const s = load();
+  if(s.attempts >= MAX_ATTEMPTS){ init(); return; }
+  s.attempts += 1; s.name = name; s.last = {name, score};
+  save(s);
+  showResult(s);
+  window.scrollTo(0,0);
+};
+
+$("retry").onclick = () => {
+  document.querySelectorAll("input[type=radio]").forEach(r=>r.checked=false);
+  $("result").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  window.scrollTo(0,0);
+};
+
+function init(){
+  const s = load();
+  if(s.attempts >= MAX_ATTEMPTS && s.last){ showResult(s); }
+}
+init();
+</script>
+</body>
+</html>
